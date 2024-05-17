@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"io"
+	// "io"
 	"net/http"
 	"os"
 	"time"
@@ -10,7 +10,6 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
-	"github.com/tidwall/gjson"
 	"golang.org/x/oauth2"
 )
 
@@ -31,8 +30,8 @@ func GetActivities(c *gin.Context, userId string, accessToken string) *http.Resp
 	q := req.URL.Query()
 	t := time.Now()
 	f := fmt.Sprintf("%d-%02d-%02dT%02d:%02d:%02d",
-	t.Year(), t.Month(), t.Day(),
-	t.Hour(), t.Minute(), t.Second())
+		t.Year(), t.Month(), t.Day(),
+		t.Hour(), t.Minute(), t.Second())
 	fmt.Println(f)
 	q.Add("beforeDate", f)
 	q.Add("sort", "desc")
@@ -46,7 +45,6 @@ func GetActivities(c *gin.Context, userId string, accessToken string) *http.Resp
 	}
 	return res
 }
-
 
 func main() {
 	conf := &oauth2.Config{
@@ -98,15 +96,10 @@ func main() {
 				panic(err)
 			}
 
-			res := GetActivities(c, tok.Extra("user_id").(string), tok.AccessToken)
-			b, err := io.ReadAll(res.Body)
-			if err != nil {
-				panic(err)
-			}
-			activities := gjson.ParseBytes(b)
-			
+			lifetimeStats := GetLifetimeStats(c, tok.Extra("user_id").(string), tok.AccessToken)
+
 			c.JSON(http.StatusOK, gin.H{
-				"message": activities,
+				"message": lifetimeStats,
 			})
 		} else {
 			c.JSON(http.StatusOK, gin.H{
