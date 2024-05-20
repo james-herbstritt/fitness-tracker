@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	// "io"
 	"net/http"
 	"os"
 	"time"
@@ -59,6 +58,7 @@ func main() {
 			"settings",
 			"sleep",
 			"temperature weight",
+			"profile",
 		},
 		Endpoint: oauth2.Endpoint{
 			AuthURL:  os.Getenv("AUTH_URL"),
@@ -96,10 +96,10 @@ func main() {
 				panic(err)
 			}
 
-			lifetimeStats := GetLifetimeStats(c, tok.Extra("user_id").(string), tok.AccessToken)
+			profile := GetActivityLogList(c, tok.Extra("user_id").(string), tok.AccessToken)
 
 			c.JSON(http.StatusOK, gin.H{
-				"message": lifetimeStats,
+				"message": profile,
 			})
 		} else {
 			c.JSON(http.StatusOK, gin.H{
