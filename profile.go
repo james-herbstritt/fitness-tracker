@@ -1,15 +1,8 @@
 package main
 
 import ( 
-	// "image"
+	"context"
 	"time"
-	_ "image/png"
-	_ "image/jpeg"
-	"net/http"
-	"io"
-	"github.com/gin-gonic/gin"
-	"fmt"
-	"encoding/json"
 )
 
 type ProfileTime struct {
@@ -88,38 +81,19 @@ type Profile struct {
 	} `json:"user,omitempty"`
 }
 
-func GetProfile(c *gin.Context, userId string, accessToken string) *Profile {
-	userUrl := fmt.Sprintf("https://api.fitbit.com/1/user/%s/profile.json", userId)
-	bearerToken := fmt.Sprintf("Bearer %s", accessToken)
-	client := http.Client{}
-	req, err := http.NewRequestWithContext(c, "GET", userUrl, nil)
-	if err != nil {
-		panic(err)
-	}
-
-	req.Header = http.Header{
-		"accept":        {"application/json"},
-		"accept-langauge": {"en_US"},
-		"accept-locale": {"en_US"},
-		"Authorization": {bearerToken},
-	}
-
-	res, err := client.Do(req)
-	if err != nil {
-		panic(err)
-	}
-
-	b, err := io.ReadAll(res.Body)
-	if err != nil {
-		panic(err)
-	}
-
+func GetProfile(userId string, accessToken string) *Profile {
+	url, header := MakeUrlAndHeader(GetProfileUrl, accessToken, userId)
+	res := Get(url, header)
 	var profile Profile
-	err = json.Unmarshal(b, &profile)
-	if err != nil {
-		panic(err)
-	}
+	ProcessResponseBody(res, &profile)
+	return &profile
+}
 
+func GetProfileWithContext(c context.Context, userId string, accessToken string) *Profile {
+	url, header := MakeUrlAndHeader(GetProfileUrl, accessToken, userId)
+	res := Get(url, header)
+	var profile Profile
+	ProcessResponseBody(res, &profile)
 	return &profile
 }
 

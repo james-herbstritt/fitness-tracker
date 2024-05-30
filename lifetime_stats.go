@@ -1,13 +1,8 @@
 package main
 
 import (
-	"encoding/json"
-	"fmt"
-	"io"
-	"net/http"
+	"context"
 	"time"
-
-	"github.com/gin-gonic/gin"
 )
 
 type TotalTime struct {
@@ -56,10 +51,9 @@ type LifetimeStats struct {
 	} `json:"best"`
 	Lifetime struct {
 		Total struct {
-			// These two are always going to be -1, just here for backwards compatibility
+			// ActiveScore and CaloriesOut are here for backwards compatibility, will always be -1
 			ActiveScore int64 `json:"activeScore"`
 			CaloriesOut int64 `json:"caloriesOut"`
-
 			Distance float64 `json:"distance"`
 			Floors float64 `json:"floors"`
 			Steps int64 `json:"steps"`
@@ -67,36 +61,18 @@ type LifetimeStats struct {
 	} `json:"lifetime"`
 }
 
-func GetLifetimeStats(c *gin.Context, userId string, accessToken string) *LifetimeStats {
-	userUrl := fmt.Sprintf("https://api.fitbit.com/1/user/%s/activities.json", userId)
-	bearerToken := fmt.Sprintf("Bearer %s", accessToken)
-	client := http.Client{}
-	req, err := http.NewRequestWithContext(c, "GET", userUrl, nil)
-	if err != nil {
-		panic(err)
-	}
-
-	req.Header = http.Header{
-		"accept":        {"application/json"},
-		"accept-langauge": {"en_US"},
-		"accept-locale": {"en_US"},
-		"Authorization": {bearerToken},
-	}
-
-	res, err := client.Do(req)
-	if err != nil {
-		panic(err)
-	}
-
-	b, err := io.ReadAll(res.Body)
-	if err != nil {
-		panic(err)
-	}
+func GetLifetimeStats(userId string, accessToken string) *LifetimeStats {
+	url, header := MakeUrlAndHeader(GetLifetimeStatsUrl, accessToken, userId)
+	res := Get(url, header)
 	var lifetimeStats LifetimeStats
-	err = json.Unmarshal(b, &lifetimeStats)
-	if err != nil {
-		panic(err)
-	}
+	ProcessResponseBody(res, &lifetimeStats)
+	return &lifetimeStats
+}
 
+func GetLifetimeStatsWithContext(c context.Context, userId string, accessToken string) *LifetimeStats {
+	url, header := MakeUrlAndHeader(GetLifetimeStatsUrl, accessToken, userId)
+	res := GetWithContext(c, url, header)
+	var lifetimeStats LifetimeStats
+	ProcessResponseBody(res, &lifetimeStats)
 	return &lifetimeStats
 }

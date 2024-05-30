@@ -96,10 +96,21 @@ func main() {
 				panic(err)
 			}
 
-			profile := GetActivityLogList(c, tok.Extra("user_id").(string), tok.AccessToken)
+			t := time.Now()
+			f := fmt.Sprintf("%d-%02d-%02dT%02d:%02d:%02d",
+				t.Year(), t.Month(), t.Day(),
+				t.Hour(), t.Minute(), t.Second())
+			params := map[string]string{
+				"beforeDate" : f,
+				"sort" : "desc",
+				"limit" : "100",
+				"offset" : "0",
+			}
+
+			activityLogList := GetActivityLogList(tok.Extra("user_id").(string), tok.AccessToken, params)
 
 			c.JSON(http.StatusOK, gin.H{
-				"message": profile,
+				"message": activityLogList,
 			})
 		} else {
 			c.JSON(http.StatusOK, gin.H{

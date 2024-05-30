@@ -1,11 +1,7 @@
 package main
 
 import (
-	"encoding/json"
-	"fmt"
-	"io"
-	"net/http"
-	"github.com/gin-gonic/gin"
+	"context"
 )
 
 type BadgeList struct {
@@ -38,37 +34,18 @@ type Badge struct {
 	Value int64 `json:"value,omitempty"`
 }
 
-func GetBadges(c *gin.Context, userId string, accessToken string) *BadgeList {
-	userUrl := fmt.Sprintf("https://api.fitbit.com/1/user/%s/badges.json", userId)
-	bearerToken := fmt.Sprintf("Bearer %s", accessToken)
-	client := http.Client{}
-	req, err := http.NewRequestWithContext(c, "GET", userUrl, nil)
-	if err != nil {
-		panic(err)
-	}
+func GetBadgeList(userId string, accessToken string) *BadgeList {
+	url, header := MakeUrlAndHeader(GetProfileUrl, accessToken, userId)
+	res := Get(url, header)
+	var  badgeList BadgeList
+	ProcessResponseBody(res, &badgeList)
+	return &badgeList
+}
 
-	req.Header = http.Header{
-		"accept":        {"application/json"},
-		"accept-langauge": {"en_US"},
-		"accept-locale": {"en_US"},
-		"Authorization": {bearerToken},
-	}
-
-	res, err := client.Do(req)
-	if err != nil {
-		panic(err)
-	}
-
-	b, err := io.ReadAll(res.Body)
-	if err != nil {
-		panic(err)
-	}
-
+func GetBadgeListWithContext(c context.Context, userId string, accessToken string) *BadgeList {
+	url, header := MakeUrlAndHeader(GetProfileUrl, accessToken, userId)
+	res := GetWithContext(c, url, header)
 	var badgeList BadgeList
-	err = json.Unmarshal(b, &badgeList)
-	if err != nil {
-		panic(err)
-	}
-
+	ProcessResponseBody(res, &badgeList)
 	return &badgeList
 }
