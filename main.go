@@ -68,13 +68,18 @@ func main() {
 				t.Year(), t.Month(), t.Day(),
 				t.Hour(), t.Minute(), t.Second())
 			params := map[string]string{
-				"beforeDate" : f,
-				"sort" : "desc",
-				"limit" : "100",
-				"offset" : "0",
+				"beforeDate": f,
+				"sort":       "desc",
+				"limit":      "100",
+				"offset":     "0",
 			}
 
-			activityLogList := GetActivityLogList(tok.Extra("user_id").(string), tok.AccessToken, params)
+			client := NewFitbitClient(tok.AccessToken)
+			activityLogList, err := client.GetActivities(c, params)
+			if err != nil {
+				panic(err)
+			}
+			//activityLogList := GetActivityLogList(tok.Extra("user_id").(string), tok.AccessToken, params)
 
 			c.JSON(http.StatusOK, gin.H{
 				"message": activityLogList,
