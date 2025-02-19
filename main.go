@@ -1,10 +1,8 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 	"os"
-	"time"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
@@ -63,26 +61,26 @@ func main() {
 				panic(err)
 			}
 
-			t := time.Now()
-			f := fmt.Sprintf("%d-%02d-%02dT%02d:%02d:%02d",
-				t.Year(), t.Month(), t.Day(),
-				t.Hour(), t.Minute(), t.Second())
-			params := map[string]string{
-				"beforeDate": f,
-				"sort":       "desc",
-				"limit":      "100",
-				"offset":     "0",
-			}
+			// t := time.Now()
+			// f := fmt.Sprintf("%d-%02d-%02dT%02d:%02d:%02d",
+			// 	t.Year(), t.Month(), t.Day(),
+			// 	t.Hour(), t.Minute(), t.Second())
+			// params := map[string]string{
+			// 	"beforeDate": f,
+			// 	"sort":       "desc",
+			// 	"limit":      "100",
+			// 	"offset":     "0",
+			// }
 
 			client := NewFitbitClient(tok.AccessToken)
-			activityLogList, err := client.GetActivities(c, params)
+			// activityLogList, err := client.GetActivities(c, params)
+			profile, err := client.GetProfile(c)
 			if err != nil {
 				panic(err)
 			}
-			//activityLogList := GetActivityLogList(tok.Extra("user_id").(string), tok.AccessToken, params)
 
 			c.JSON(http.StatusOK, gin.H{
-				"message": activityLogList,
+				"message": profile,
 			})
 		} else {
 			c.JSON(http.StatusOK, gin.H{
