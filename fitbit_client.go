@@ -44,13 +44,24 @@ func (c *FitbitClient) doRequest(ctx context.Context, req *http.Request) (*http.
 	return c.HttpClient.Do(req)
 }
 
-func (c *FitbitClient) GetActivities(ctx context.Context, params map[string]string) (*ActivityLogList, error) {
-	path := fmt.Sprintf(GET_ACTIVITY_LOG_LIST_PATH, "-")
-	u := c.BaseURL.JoinPath(path)
+func (c *FitbitClient) buildGET(ctx context.Context, path string, urlargs ...any) (*http.Request, error) {
+	p := fmt.Sprintf(path, urlargs...)
+	u := c.BaseURL.JoinPath(p)
+
+	fmt.Println(u.String())
 
 	req, err := http.NewRequest("GET", u.String(), nil)
 	if err != nil {
 		return nil, err
+	}
+
+	return req, nil
+}
+
+func (c *FitbitClient) GetActivities(ctx context.Context, userId string, params map[string]string) (*ActivityLogList, error) {
+	req, err := c.buildGET(ctx, GET_ACTIVITY_LOG_LIST_PATH, userId)
+	if err != nil {
+		panic(err)
 	}
 
 	addQueryParamsToRequest(req, params)
@@ -61,7 +72,7 @@ func (c *FitbitClient) GetActivities(ctx context.Context, params map[string]stri
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, errors.New("failed to fetch activities: " + resp.Status)
+		return nil, errors.New("failed get request at path " + GET_ACTIVITY_LOG_LIST_PATH + ": " + resp.Status)
 	}
 
 	var result *ActivityLogList
@@ -72,13 +83,10 @@ func (c *FitbitClient) GetActivities(ctx context.Context, params map[string]stri
 	return result, nil
 }
 
-func (c *FitbitClient) GetProfile(ctx context.Context) (*Profile, error) {
-	path := fmt.Sprintf(GET_PROFILE_PATH, "-")
-	u := c.BaseURL.JoinPath(path)
-
-	req, err := http.NewRequest("GET", u.String(), nil)
+func (c *FitbitClient) GetProfile(ctx context.Context, userId string) (*Profile, error) {
+	req, err := c.buildGET(ctx, GET_PROFILE_PATH, userId)
 	if err != nil {
-		return nil, err
+		panic(err)
 	}
 
 	resp, err := c.doRequest(ctx, req)
@@ -88,10 +96,34 @@ func (c *FitbitClient) GetProfile(ctx context.Context) (*Profile, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, errors.New("failed to fetch profile: " + resp.Status)
+		return nil, errors.New("failed get request at path " + GET_PROFILE_PATH + ": " + resp.Status)
 	}
 
 	var result *Profile
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func (c *FitbitClient) GetBadges(ctx context.Context, userId string) (*BadgeList, error) {
+	req, err := c.buildGET(ctx, GET_BADGES_PATH, userId)
+	if err != nil {
+		panic(err)
+	}
+
+	resp, err := c.doRequest(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, errors.New("failed get request at path " + GET_BADGES_PATH + ": " + resp.Status)
+	}
+
+	var result *BadgeList
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		return nil, err
 	}

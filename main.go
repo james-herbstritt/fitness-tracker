@@ -74,7 +74,7 @@ func main() {
 
 			client := NewFitbitClient(tok.AccessToken)
 			// activityLogList, err := client.GetActivities(c, params)
-			profile, err := client.GetProfile(c)
+			profile, err := client.GetBadges(c, "-")
 			if err != nil {
 				panic(err)
 			}
