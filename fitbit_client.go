@@ -17,6 +17,7 @@ type FitbitClient struct {
 	HttpClient *http.Client
 }
 
+// This is mutation, not sure I love it
 func addQueryParamsToRequest(req *http.Request, params map[string]string) {
 	q := req.URL.Query()
 	for k, v := range params {
@@ -44,6 +45,7 @@ func (c *FitbitClient) doRequest(ctx context.Context, req *http.Request) (*http.
 	return c.HttpClient.Do(req)
 }
 
+// Not sure how worth it this func is
 func (c *FitbitClient) buildGET(ctx context.Context, path string, urlargs ...any) (*http.Request, error) {
 	p := fmt.Sprintf(path, urlargs...)
 	u := c.BaseURL.JoinPath(p)
@@ -124,6 +126,30 @@ func (c *FitbitClient) GetBadges(ctx context.Context, userId string) (*BadgeList
 	}
 
 	var result *BadgeList
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func (c *FitbitClient) GetLifetimeStats(ctx context.Context, userId string) (*LifetimeStats, error) {
+	req, err := c.buildGET(ctx, GET_LIFETIME_STATS_PATH, userId)
+	if err != nil {
+		panic(err)
+	}
+
+	resp, err := c.doRequest(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, errors.New("fialed get request at path " + GET_LIFETIME_STATS_PATH + ": " + resp.Status)
+	}
+
+	var result *LifetimeStats
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		return nil, err
 	}

@@ -74,13 +74,13 @@ func main() {
 
 			client := NewFitbitClient(tok.AccessToken)
 			// activityLogList, err := client.GetActivities(c, params)
-			profile, err := client.GetBadges(c, "-")
+			lifetimeStats, err := client.GetLifetimeStats(c, "-")
 			if err != nil {
 				panic(err)
 			}
 
 			c.JSON(http.StatusOK, gin.H{
-				"message": profile,
+				"message": lifetimeStats,
 			})
 		} else {
 			c.JSON(http.StatusOK, gin.H{
