@@ -51,7 +51,6 @@ func main() {
 	r.GET("/success", func(c *gin.Context) {
 		session := sessions.Default(c)
 		code := c.Query("code")
-
 		v := session.Get("verifier")
 
 		verifier, ok := v.(string)
