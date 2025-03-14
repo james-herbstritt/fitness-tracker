@@ -11,8 +11,9 @@ import (
 )
 
 type FitbitClient struct {
-	BaseURL   *url.URL
-	AuthToken string
+	BaseURL      *url.URL
+	AuthToken    string
+	RefreshToken string
 
 	HttpClient *http.Client
 }
@@ -26,14 +27,15 @@ func addQueryParamsToRequest(req *http.Request, params map[string]string) {
 	req.URL.RawQuery = q.Encode()
 }
 
-func NewFitbitClient(authToken string) *FitbitClient {
+func NewFitbitClient(authToken string, refreshToken string) *FitbitClient {
 	return &FitbitClient{
 		BaseURL: &url.URL{
 			Scheme: "https",
 			Host:   "api.fitbit.com",
 		},
-		AuthToken:  authToken,
-		HttpClient: &http.Client{Timeout: 10 * time.Second},
+		AuthToken:    authToken,
+		RefreshToken: refreshToken,
+		HttpClient:   &http.Client{Timeout: 10 * time.Second},
 	}
 }
 
