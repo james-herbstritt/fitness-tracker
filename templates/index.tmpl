@@ -3,23 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fitbit Profile</title>
+    <title>Fitbit OAuth</title>
     <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
     <div class="container">
-        <h1>Fitbit Profile</h1>
-        <img src="{{ .Avatar }}" alt="Profile Picture" class="avatar">
-        <h2>{{ .Name }}</h2>
-        <p>Member Since: {{ .MemberSince }}</p>
-
-        <h3>Lifetime Stats</h3>
-        <p><strong>Steps:</strong> {{ .Steps }}</p>
-        <p><strong>Distance:</strong> {{ .Distance }} km</p>
-        <p><strong>Floors Climbed:</strong> {{ .Floors }}</p>
+        <h1>Connect Your Fitbit</h1>
+        <a href="{{ .AuthURL }}" class="btn">Authorize with Fitbit</a>
     </div>
-
-    <script src="/static/js/script.js"></script>
 </body>
 </html>
-
