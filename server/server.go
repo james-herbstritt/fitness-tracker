@@ -38,7 +38,9 @@ func Run() {
 		session.Save()
 
 		url := internal.GenerateAuthCodeURL(verifier)
-		JSONResponse(c, http.StatusOK, url)
+		c.HTML(http.StatusOK, "index.tmpl", gin.H{
+			"AuthURL": url,
+		})
 
 	})
 	r.GET("/success", func(c *gin.Context) {
@@ -55,19 +57,8 @@ func Run() {
 
 			tokenSource := internal.GetTokenSource(c, tok)
 			token, err := internal.GetToken(tokenSource)
-			// t := time.Now()
-			// f := fmt.Sprintf("%d-%02d-%02dT%02d:%02d:%02d",
-			// 	t.Year(), t.Month(), t.Day(),
-			// 	t.Hour(), t.Minute(), t.Second())
-			// params := map[string]string{
-			// 	"beforeDate": f,
-			// 	"sort":       "desc",
-			// 	"limit":      "100",
-			// 	"offset":     "0",
-			// }
 
 			client := fitbit.NewFitbitClient(token.AccessToken)
-			// activityLogList, err := client.GetActivities(c, params)
 			lifetimeStats, err := client.GetLifetimeStats(c, "-")
 			profile, err := client.GetProfile(c, "-")
 
@@ -75,7 +66,7 @@ func Run() {
 				panic(err)
 			}
 
-			c.HTML(http.StatusOK, "index.tmpl", gin.H{
+			c.HTML(http.StatusOK, "profile.tmpl", gin.H{
 				"Name":        profile.User.DisplayName,
 				"Avatar":      profile.User.Avatar,
 				"MemberSince": profile.User.MemberSince,
@@ -83,15 +74,7 @@ func Run() {
 				"Distance":    lifetimeStats.Lifetime.Total.Distance,
 				"Floors":      lifetimeStats.Lifetime.Total.Floors,
 			})
-			//			c.JSON(http.StatusOK, gin.H{
-			//				"message": lifetimeStats,
-			//			})
-			//		} else {
-			//			c.JSON(http.StatusOK, gin.H{
-			//				"message": "error getting verifier",
-			//			})
 		}
-
 	})
 	r.Run(":3000") // listen and serve on 0.0.0.0:3000
 }

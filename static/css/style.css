@@ -27,3 +27,21 @@ p {
     font-size: 18px;
 }
 
+}
+
+.avatar {
+    border-radius: 50%;
+    width: 100px;
+    height: 100px;
+}
+
+.btn {
+    display: inline-block;
+    margin-top: 20px;
+    padding: 10px 20px;
+    color: white;
+    background-color: #4CAF50;
+    text-decoration: none;
+    border-radius: 5px;
+}
+
