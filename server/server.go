@@ -26,6 +26,9 @@ func Run() {
 	store := cookie.NewStore([]byte("secret"))
 	r.Use(sessions.Sessions("mysession", store))
 
+	r.Static("/static", "./static")
+	r.LoadHTMLGlob("templates/*")
+
 	r.GET("/auth", func(c *gin.Context) {
 		session := sessions.Default(c)
 		// use PKCE to protect against CSRF attacks
@@ -66,18 +69,29 @@ func Run() {
 			client := fitbit.NewFitbitClient(token.AccessToken)
 			// activityLogList, err := client.GetActivities(c, params)
 			lifetimeStats, err := client.GetLifetimeStats(c, "-")
+			profile, err := client.GetProfile(c, "-")
+
 			if err != nil {
 				panic(err)
 			}
 
-			c.JSON(http.StatusOK, gin.H{
-				"message": lifetimeStats,
+			c.HTML(http.StatusOK, "index.tmpl", gin.H{
+				"Name":        profile.User.DisplayName,
+				"Avatar":      profile.User.Avatar,
+				"MemberSince": profile.User.MemberSince,
+				"Steps":       lifetimeStats.Lifetime.Total.Steps,
+				"Distance":    lifetimeStats.Lifetime.Total.Distance,
+				"Floors":      lifetimeStats.Lifetime.Total.Floors,
 			})
-		} else {
-			c.JSON(http.StatusOK, gin.H{
-				"message": "error getting verifier",
-			})
+			//			c.JSON(http.StatusOK, gin.H{
+			//				"message": lifetimeStats,
+			//			})
+			//		} else {
+			//			c.JSON(http.StatusOK, gin.H{
+			//				"message": "error getting verifier",
+			//			})
 		}
+
 	})
 	r.Run(":3000") // listen and serve on 0.0.0.0:3000
 }
