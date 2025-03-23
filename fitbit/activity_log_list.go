@@ -31,7 +31,7 @@ type Activity struct {
 	CaloriesLink          string                 `json:"caloriesLink,omitempty"`
 	Duration              int64                  `json:"duration,omitempty"`
 	ElevationGain         float64                `json:"elevationGain,omitempty"`
-	LastModified          ActivityTime           `json:"lastModified,omitempty"`
+	LastModified          ActivityTime           `json:"lastModified"`
 	LogId                 int64                  `json:"logId,omitempty"`
 	LogType               string                 `json:"logType,omitempty"`
 	ManualValuesSpecified struct {
@@ -40,8 +40,8 @@ type Activity struct {
 		Steps    bool `json:"steps,omitempty"`
 	}
 	OriginalDuration  int64        `json:"originalDuration,omitempty"`
-	OriginalStartTime ActivityTime `json:"originalStartTime,omitempty"`
-	StartTime         ActivityTime `json:"startTime,omitempty"`
+	OriginalStartTime ActivityTime `json:"originalStartTime"`
+	StartTime         ActivityTime `json:"startTime"`
 	Steps             int64        `json:"steps,omitempty"`
 	TcxLink           string       `json:"tcxLink,omitempty"`
 }
@@ -49,11 +49,11 @@ type Activity struct {
 type ActivityLogList struct {
 	Activities []Activity `json:"activities,omitempty"`
 	Pagination struct {
-		AfterDate ProfileTime `json:"afterDate,omitempty"`
+		AfterDate ProfileTime `json:"afterDate"`
 		Limit     int64       `json:"limit,omitempty"`
 		Next      string      `json:"next,omitempty"`
 		Offset    int64       `json:"offset,omitempty"`
 		Previous  string      `json:"previous,omitempty"`
 		Sort      string      `json:"sort,omitempty"`
-	} `json:"pagination,omitempty"`
+	} `json:"pagination"`
 }

@@ -156,3 +156,27 @@ func (c *FitbitClient) GetLifetimeStats(ctx context.Context, userId string) (*Li
 
 	return result, nil
 }
+
+func (c *FitbitClient) GetDailyActivitySummary(ctx context.Context, userId string, date time.Time) (*DailyActivitySummary, error) {
+	req, err := c.buildGET(ctx, GET_DAILY_ACTIVITY_SUMMARY_PATH, userId, date.Format("2006-01-02"))
+	if err != nil {
+		panic(err)
+	}
+
+	resp, err := c.doRequest(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, errors.New("failed get request at path " + GET_DAILY_ACTIVITY_SUMMARY_PATH + ": " + resp.Status)
+	}
+
+	var result *DailyActivitySummary
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}

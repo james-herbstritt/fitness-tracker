@@ -3,6 +3,7 @@ package server
 import (
 	"encoding/json"
 	"net/http"
+	"time"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
@@ -11,6 +12,8 @@ import (
 	"github.com/james-herbstritt/fitness-tracker/internal"
 	"golang.org/x/oauth2"
 )
+
+var tokenSource oauth2.TokenSource
 
 func JSONResponse(c *gin.Context, code int, obj interface{}) {
 	c.Writer.Header().Set("Content-Type", "application/json")
@@ -55,11 +58,18 @@ func Run() {
 				panic(err)
 			}
 
-			tokenSource := internal.GetTokenSource(c, tok)
+			tokenSource = internal.GetTokenSource(c, tok)
 			token, err := internal.GetToken(tokenSource)
+			if err != nil {
+				panic(err)
+			}
 
 			client := fitbit.NewFitbitClient(token.AccessToken)
 			lifetimeStats, err := client.GetLifetimeStats(c, "-")
+			if err != nil {
+				panic(err)
+			}
+
 			profile, err := client.GetProfile(c, "-")
 
 			if err != nil {
@@ -75,6 +85,26 @@ func Run() {
 				"Floors":      lifetimeStats.Lifetime.Total.Floors,
 			})
 		}
+	})
+	r.GET("/summary", func(c *gin.Context) {
+		token, err := internal.GetToken(tokenSource)
+		if err != nil {
+			panic(err)
+		}
+
+		client := fitbit.NewFitbitClient(token.AccessToken)
+		today := time.Now()
+		dailySummary, err := client.GetDailyActivitySummary(c, "-", today)
+		if err != nil {
+			panic(err)
+		}
+
+		c.HTML(http.StatusOK, "daily_summary.tmpl", gin.H{
+			"Steps":         dailySummary.Summary.Steps,
+			"CaloriesOut":   dailySummary.Summary.CaloriesOut,
+			"Distance":      dailySummary.Summary.Distances[0].Distance,
+			"ActiveMinutes": dailySummary.Summary.VeryActiveMinutes,
+		})
 	})
 	r.Run(":3000") // listen and serve on 0.0.0.0:3000
 }
