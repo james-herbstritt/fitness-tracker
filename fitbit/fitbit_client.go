@@ -46,7 +46,7 @@ func (c *FitbitClient) doRequest(ctx context.Context, req *http.Request) (*http.
 }
 
 // Not sure how worth it this func is
-func (c *FitbitClient) buildGET(ctx context.Context, path string, urlargs ...any) (*http.Request, error) {
+func (c *FitbitClient) buildGET(path string, urlargs ...any) (*http.Request, error) {
 	p := fmt.Sprintf(path, urlargs...)
 	u := c.BaseURL.JoinPath(p)
 
@@ -61,7 +61,7 @@ func (c *FitbitClient) buildGET(ctx context.Context, path string, urlargs ...any
 }
 
 func (c *FitbitClient) GetActivities(ctx context.Context, userId string, params map[string]string) (*ActivityLogList, error) {
-	req, err := c.buildGET(ctx, GET_ACTIVITY_LOG_LIST_PATH, userId)
+	req, err := c.buildGET(GET_ACTIVITY_LOG_LIST_PATH, userId)
 	if err != nil {
 		panic(err)
 	}
@@ -86,7 +86,7 @@ func (c *FitbitClient) GetActivities(ctx context.Context, userId string, params 
 }
 
 func (c *FitbitClient) GetProfile(ctx context.Context, userId string) (*Profile, error) {
-	req, err := c.buildGET(ctx, GET_PROFILE_PATH, userId)
+	req, err := c.buildGET(GET_PROFILE_PATH, userId)
 	if err != nil {
 		panic(err)
 	}
@@ -110,7 +110,7 @@ func (c *FitbitClient) GetProfile(ctx context.Context, userId string) (*Profile,
 }
 
 func (c *FitbitClient) GetBadges(ctx context.Context, userId string) (*BadgeList, error) {
-	req, err := c.buildGET(ctx, GET_BADGES_PATH, userId)
+	req, err := c.buildGET(GET_BADGES_PATH, userId)
 	if err != nil {
 		panic(err)
 	}
@@ -134,7 +134,7 @@ func (c *FitbitClient) GetBadges(ctx context.Context, userId string) (*BadgeList
 }
 
 func (c *FitbitClient) GetLifetimeStats(ctx context.Context, userId string) (*LifetimeStats, error) {
-	req, err := c.buildGET(ctx, GET_LIFETIME_STATS_PATH, userId)
+	req, err := c.buildGET(GET_LIFETIME_STATS_PATH, userId)
 	if err != nil {
 		panic(err)
 	}
@@ -146,7 +146,7 @@ func (c *FitbitClient) GetLifetimeStats(ctx context.Context, userId string) (*Li
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, errors.New("fialed get request at path " + GET_LIFETIME_STATS_PATH + ": " + resp.Status)
+		return nil, errors.New("failed get request at path " + GET_LIFETIME_STATS_PATH + ": " + resp.Status)
 	}
 
 	var result *LifetimeStats
@@ -158,7 +158,7 @@ func (c *FitbitClient) GetLifetimeStats(ctx context.Context, userId string) (*Li
 }
 
 func (c *FitbitClient) GetDailyActivitySummary(ctx context.Context, userId string, date time.Time) (*DailyActivitySummary, error) {
-	req, err := c.buildGET(ctx, GET_DAILY_ACTIVITY_SUMMARY_PATH, userId, date.Format("2006-01-02"))
+	req, err := c.buildGET(GET_DAILY_ACTIVITY_SUMMARY_PATH, userId, date.Format("2006-01-02"))
 	if err != nil {
 		panic(err)
 	}
@@ -174,6 +174,29 @@ func (c *FitbitClient) GetDailyActivitySummary(ctx context.Context, userId strin
 	}
 
 	var result *DailyActivitySummary
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+func (c *FitbitClient) GetActivityGoals(ctx context.Context, userId string, period string) (*ActivityGoals, error) {
+	req, err := c.buildGET(GET_ACTIVITY_GOALS_PATH, userId, period)
+	if err != nil {
+		panic(err)
+	}
+
+	resp, err := c.doRequest(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, errors.New("failed get request at path " + GET_ACTIVITY_GOALS_PATH + ": " + resp.Status)
+	}
+
+	var result *ActivityGoals
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		return nil, err
 	}

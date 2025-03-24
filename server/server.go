@@ -106,5 +106,27 @@ func Run() {
 			"ActiveMinutes": dailySummary.Summary.VeryActiveMinutes,
 		})
 	})
+
+	r.GET("/goals", func(c *gin.Context) {
+		token, err := internal.GetToken(tokenSource)
+		if err != nil {
+			panic(err)
+		}
+
+		client := fitbit.NewFitbitClient(token.AccessToken)
+		goals, err := client.GetActivityGoals(c, "-", "daily")
+		if err != nil {
+			panic(err)
+		}
+
+		c.HTML(http.StatusOK, "goals.tmpl", gin.H{
+			"ActiveMinutes":     goals.Goals.ActiveMinutes,
+			"ActiveZoneMinutes": goals.Goals.ActiveZoneMinutes,
+			"CaloriesOut":       goals.Goals.CaloriesOut,
+			"Distance":          goals.Goals.Distance,
+			"Floors":            goals.Goals.Floors,
+			"Steps":             goals.Goals.Steps,
+		})
+	})
 	r.Run(":3000") // listen and serve on 0.0.0.0:3000
 }
